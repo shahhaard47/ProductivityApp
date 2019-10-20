@@ -10,9 +10,10 @@ lista = ['a', 'actions', 'additional', 'also', 'an', 'and', 'angle', 'are', 'as'
 
 
 class AutocompleteEntry(Entry):
-    def __init__(self, lista, *args, **kwargs):
+    def __init__(self, lista, highlightLst, *args, **kwargs):
 
         Entry.__init__(self, *args, **kwargs)
+        self.highlightLst = highlightLst
         self.lista = lista
         self.var = self["textvariable"]
         if self.var == '':
@@ -42,8 +43,20 @@ class AutocompleteEntry(Entry):
                     self.lb_up = True
 
                 self.lb.delete(0, END)
-                for w in words:
+                badIndices = []
+                goodIndices = []
+                for i, w in enumerate(words):
+                    if w in self.highlightLst:
+                        badIndices.append(i)
+                    else:
+                        goodIndices.append(i)
                     self.lb.insert(END, w)
+                # highlight indices
+                # colors chosen from: https://htmlcolorcodes.com 
+                # for j in goodIndices: # don't color green for now
+                #     self.lb.itemconfig(j, bg="#B3F4A6") # soft green
+                for j in badIndices:
+                    self.lb.itemconfig(j, bg="#FFDDD6") # soft red
             else:
                 if self.lb_up:
                     self.lb.destroy()
@@ -85,7 +98,7 @@ class AutocompleteEntry(Entry):
 
     def comparison(self):
         pattern = re.compile('.*' + self.var.get() + '.*', re.IGNORECASE)
-        return [w for w in self.lista if re.match(pattern, w)]
+        return [w for w in (self.lista + self.highlightLst) if re.match(pattern, w)]
 
 
 if __name__ == '__main__':

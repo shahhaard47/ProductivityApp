@@ -35,7 +35,7 @@ class Track(object):
         self.taskKeyWords = [] # should be loaded from a file
         self.todaysTasks = [] # to prevent repeats from being added
 
-        self.taskEntry = AutocompleteEntry(self.taskKeyWords, self.application, width=40)
+        self.taskEntry = AutocompleteEntry(self.taskKeyWords, self.todaysTasks, self.application, width=40)
         self.taskEntry.grid(row=0, column=0, pady=10, padx=10)
         self.taskEntry.bind('<Return>', self._addTaskWithReturnKey)
         addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="green") # TODO: pass in entry as argument
@@ -123,7 +123,10 @@ class Track(object):
         if not taskText and self.taskEntry.get() == '': return
         # task
         taskText = self.taskEntry.get() if taskText is None else taskText
-
+        if taskText in self.todaysTasks:
+            messagebox.showerror("Already Exists", taskText+" already exists. It won't be added.")
+            self.taskEntry.delete(0, "end")
+            return
         self.todaysTasks.append(taskText)
         task = Label(self.application, text=taskText, anchor='c', width=40, borderwidth=1, relief="solid")
         task.grid(row=self.totalTasks + 1, column=0)
