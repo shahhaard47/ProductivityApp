@@ -120,7 +120,6 @@ class Track(object):
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
-        print(not taskText, self.taskEntry.get() == '')
         if not taskText and self.taskEntry.get() == '': return
         # task
         taskText = self.taskEntry.get() if taskText is None else taskText
