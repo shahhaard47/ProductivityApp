@@ -11,6 +11,9 @@ Created by: Haard Shah
 python3 app.py
 ```
 
+**ALSO**
+> Must be executed from within the folder because of file io 
+
 ## Modules used
 > default Python packages
 
