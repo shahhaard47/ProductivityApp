@@ -12,7 +12,7 @@ python3 app.py
 ```
 
 **ALSO**
-> Must be executed from within the folder because of file io 
+> Must be executed from within the folder because of fileIO and the use of `AutocompleteEntry.py`
 
 ## Modules used
 > default Python packages
