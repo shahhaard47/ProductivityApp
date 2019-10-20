@@ -13,9 +13,12 @@ from datetime import date
 import csv
 import os
 
+from AutocompleteEntry import AutocompleteEntry
+
 # Constants
 START = "Start"
 STOP = "Stop"
+KEYWORDS_FILE = '_keywords_.csv'
 
 class Track(object):
     def __init__(self):
@@ -29,7 +32,10 @@ class Track(object):
         self.tasks = [] # each element will be dictionary
         self.btns = []
 
-        self.taskEntry = Entry(self.application, width=40)
+        self.taskKeyWords = [] # should be loaded from a file
+        self.todaysTasks = [] # to prevent repeats from being added
+
+        self.taskEntry = AutocompleteEntry(self.taskKeyWords, self.application, width=40)
         self.taskEntry.grid(row=0, column=0, pady=10, padx=10)
         self.taskEntry.bind('<Return>', self._addTaskWithReturnKey)
         addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="green") # TODO: pass in entry as argument
@@ -73,6 +79,22 @@ class Track(object):
                 seconds = int(last)
         return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, microseconds=micros)
 
+
+    def loadPreviousTaskKeywordsFromFile(self):
+        # update self.taskKeyWords list
+        keywordsFile = KEYWORDS_FILE
+        if not os.path.exists(keywordsFile):
+            with open(keywordsFile, "w") as f:
+                pass
+            return
+        with open(keywordsFile) as f:
+            # FILE FORMAT: all keywords on one row separated by commas
+            reader = csv.reader(f, delimiter=',')
+            for words in reader:
+                for word in words:
+                    if word not in self.todaysTasks:
+                        self.taskKeyWords.append(word)
+
     def initializePrevious(self):
         '''Initialize previous tasks from today if they exist'''
         dayFile = str(date.today())+'.csv'
@@ -90,15 +112,20 @@ class Track(object):
                 else:
                     first = False
 
+        self.loadPreviousTaskKeywordsFromFile()
+
     def _addTaskWithReturnKey(self, entry):
+        if self.taskEntry.get() == '': return
         self.addTask(taskText=self.taskEntry.get())
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
-        if taskText is None and not self.taskEntry.get():
-            return
+        print(not taskText, self.taskEntry.get() == '')
+        if not taskText and self.taskEntry.get() == '': return
         # task
         taskText = self.taskEntry.get() if taskText is None else taskText
+
+        self.todaysTasks.append(taskText)
         task = Label(self.application, text=taskText, anchor='c', width=40, borderwidth=1, relief="solid")
         task.grid(row=self.totalTasks + 1, column=0)
         self.taskEntry.delete(0, "end")
@@ -196,6 +223,14 @@ class Track(object):
                 #     writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
                 for interval in t['timeStamps']:
                     writer.writerow([today, t['task'], t['totalLabel']['text'], interval[0], interval[1]])
+        ##  Add self.todaysTasks to _keywords_.csv if not already there
+        addKeywords=[]
+        for t in self.todaysTasks:
+            if t not in self.taskKeyWords:
+                addKeywords.append(t)
+        with open(KEYWORDS_FILE, "a") as f:
+            writer = csv.writer(f, delimiter=',')
+            writer.writerow(addKeywords)
         # DONE
         self.application.destroy()
 
