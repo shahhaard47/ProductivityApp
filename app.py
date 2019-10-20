@@ -29,13 +29,17 @@ class Track(object):
         self.tasks = [] # each element will be dictionary
         self.btns = []
 
-        self.taskEntry = Entry(self.application, width=30)
-        self.taskEntry.grid(row=0, column=0)
-        addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w") # TODO: pass in entry as argument
-        addButton.grid(row=0, column=1)
+        self.taskEntry = Entry(self.application, width=40)
+        self.taskEntry.grid(row=0, column=0, pady=10, padx=10)
+        self.taskEntry.bind('<Return>', self._addTaskWithReturnKey)
+        addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="green") # TODO: pass in entry as argument
+        addButton.grid(row=0, column=1, pady=10)
 
         self.taskFrame = Frame(self.application)
-        self.taskFrame.grid(row=2)
+        self.taskFrame.grid(row=2, column=0, pady=10)
+
+        self.buttonFrame = Frame(self.application)
+        self.buttonFrame.grid(row=2, column=1, pady=10)
 
         # state vars
         self.WORKING = False
@@ -86,6 +90,8 @@ class Track(object):
                 else:
                     first = False
 
+    def _addTaskWithReturnKey(self, entry):
+        self.addTask(taskText=self.taskEntry.get())
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
@@ -93,16 +99,16 @@ class Track(object):
             return
         # task
         taskText = self.taskEntry.get() if taskText is None else taskText
-        task = Label(self.taskFrame, text=taskText, justify='left', anchor='w', width=40)
-        task.grid(row=self.totalTasks, column=0)
+        task = Label(self.application, text=taskText, anchor='c', width=40, borderwidth=1, relief="solid")
+        task.grid(row=self.totalTasks + 1, column=0)
         self.taskEntry.delete(0, "end")
         # start stop button
         b = self.createButton()
-        b.grid(row=self.totalTasks, column=1)
+        b.grid(row=self.totalTasks + 1, column=1)
         # total time label
         totalTime = timedelta() if totalTime is None else totalTime
-        totTime = Label(self.taskFrame, text=str(totalTime), justify='right', width=20)
-        totTime.grid(row=self.totalTasks, column=2)
+        totTime = Label(self.application, text=str(totalTime), justify='right', width=20)
+        totTime.grid(row=self.totalTasks + 1, column=2)
         # add to tasks lst
         self.tasks.append({
             "task" : task['text'],
@@ -115,7 +121,7 @@ class Track(object):
 
 
     def createButton(self):
-        button = Button(self.taskFrame, text=START, width=20)
+        button = Button(self.application, text=START, width=20)
         button.bind("<Button-1>", self.buttonCallback)
         # button.pack()
         return button
