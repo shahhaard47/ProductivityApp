@@ -81,13 +81,16 @@ class Track(object):
             for i, row in enumerate(rows):
                 if not first: 
                     if i is not 0:
-                        if row[1] is not rows[i-1][1]:
+                        if row[1] != rows[i-1][1]:
                             self.addTask(taskText=row[1], totalTime=self.strToTimedelta(row[2]))
                 else:
                     first = False
 
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
+        # do nothing if taskEntry box is empty
+        if taskText is None and not self.taskEntry.get():
+            return
         # task
         taskText = self.taskEntry.get() if taskText is None else taskText
         task = Label(self.taskFrame, text=taskText, justify='left', anchor='w', width=40)
