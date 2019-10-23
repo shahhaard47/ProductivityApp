@@ -68,9 +68,15 @@ class Track(object):
             pass # should not work on something for days at once!
         else:
             t = strTime.split(':')
-            hours = int(t[0])
-            minutes = int(t[1])
-            last = t[2]
+            if len(t) == 3: # hrs:mins:secs.micros
+                hours = int(t[0])
+                minutes = int(t[1])
+                last = t[2]
+            elif len(t) == 2: # mins:secs.micros
+                minutes = int(t[0])
+                last = t[1]
+            else:
+                print("len of time split", len(t), "time", strTime)
             if '.' in last:
                 last = last.split('.')
                 seconds = int(last[0])
@@ -134,6 +140,7 @@ class Track(object):
         # start stop button
         b = self.createButton()
         b.grid(row=self.totalTasks + 1, column=1)
+        if self.WORKING: self.disableButton(b)
         # total time label
         totalTime = timedelta() if totalTime is None else totalTime
         totTime = Label(self.application, text=str(totalTime), justify='right', width=20)
