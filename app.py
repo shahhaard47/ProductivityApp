@@ -98,7 +98,7 @@ class Track(object):
             reader = csv.reader(f, delimiter=',')
             for words in reader:
                 for word in words:
-                    if word not in self.todaysTasks:
+                    if word not in self.todaysTasks and word not in self.taskKeyWords:
                         self.taskKeyWords.append(word)
 
     def initializePrevious(self):
@@ -108,16 +108,15 @@ class Track(object):
         # file exists
         with open(dayFile) as f:
             reader = csv.reader(f, delimiter=',')
-            first = True
             rows = [r for r in reader]
-            for i, row in enumerate(rows):
-                if not first: 
-                    if i is not 0:
-                        if row[1] != rows[i-1][1]:
-                            self.addTask(taskText=row[1], totalTime=self.strToTimedelta(row[2]))
-                else:
-                    first = False
-
+            for i in range(1, len(rows)):
+                row = rows[i]
+                if row[0]:
+                    self.addTask(taskText=row[1], totalTime=self.strToTimedelta(row[2]))
+                else: # found timestamps for prev task
+                    s = row[3]
+                    e = row[4]
+                    self.tasks[-1]['timeStamps'].append((s, e))
         self.loadPreviousTaskKeywordsFromFile()
 
     def _addTaskWithReturnKey(self, entry):
@@ -187,10 +186,12 @@ class Track(object):
         btn['text'] = START
         endTime = dt.now()
         totalTime = endTime - self.startTime
+        # print(self.startTime, endTime)
         self.tasks[self.currentTask]['totalTime'] += totalTime
-        self.tasks[self.currentTask]['totalLabel']['text'] = str(self.tasks[self.currentTask]['totalTime'])
+        strTD = str(self.tasks[self.currentTask]['totalTime']) #string timeDelta
+        self.tasks[self.currentTask]['totalLabel']['text'] = strTD[:-7] if '.' in strTD else strTD
         self.tasks[self.currentTask]['timeStamps'].append(
-            ( self.startTime.strftime("%H:%M:%S"), endTime.strftime("%H:%M:%S") ) )
+            (self.startTime.strftime("%m-%d-%Y %H:%M:%S"), endTime.strftime("%m-%d-%Y %H:%M:%S")))  # TODO: add date to the timestamp
 
         # manage state vars
         self.WORKING = False
@@ -221,17 +222,16 @@ class Track(object):
         # SAVE EVERYTHING
         fileName = str(date.today()) + ".csv"
         headerLine = True
-        if os.path.exists(fileName): headerLine = False
-        with open(fileName, "a") as f:
+        # if os.path.exists(fileName): headerLine = False
+        with open(fileName, "w") as f:
             writer = csv.writer(f, delimiter=",")
             today = str(date.today())
-            if headerLine: writer.writerow([today, 'Task', 'Total Time', 'Start Time', 'End Time'])
+            if headerLine: writer.writerow(['SaveDate', 'Task', 'Total Time', 'Start', 'End'])
             for t in self.tasks:
-                # don't include task if didn't work on it
                 # if len(t['timeStamps']) == 0:
-                #     writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
+                writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
                 for interval in t['timeStamps']:
-                    writer.writerow([today, t['task'], t['totalLabel']['text'], interval[0], interval[1]])
+                    writer.writerow(['', '', '', interval[0], interval[1]])
         ##  Add self.todaysTasks to _keywords_.csv if not already there
         addKeywords=[]
         for t in self.todaysTasks:
