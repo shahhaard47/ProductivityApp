@@ -34,6 +34,7 @@ class Track(object):
 
         self.taskKeyWords = [] # should be loaded from a file
         self.todaysTasks = [] # to prevent repeats from being added
+        self.newKeywords = [] # keeps track of new words user adds during a session
 
         self.taskEntry = AutocompleteEntry(self.taskKeyWords, self.todaysTasks, self.application, width=40)
         self.taskEntry.grid(row=0, column=0, pady=10, padx=10)
@@ -98,7 +99,7 @@ class Track(object):
             reader = csv.reader(f, delimiter=',')
             for words in reader:
                 for word in words:
-                    if word not in self.todaysTasks and word not in self.taskKeyWords:
+                    if word not in self.todaysTasks: 
                         self.taskKeyWords.append(word)
 
     def initializePrevious(self):
@@ -121,12 +122,16 @@ class Track(object):
 
     def _addTaskWithReturnKey(self, entry):
         if self.taskEntry.get() == '': return
-        self.addTask(taskText=self.taskEntry.get())
+        self.addTask()
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
         if not taskText and self.taskEntry.get() == '': return
         # task
+        if not taskText: # added through GUI
+            taskText = self.taskEntry.get()
+            if taskText not in self.taskKeyWords:
+                self.newKeywords.append(taskText)
         taskText = self.taskEntry.get() if taskText is None else taskText
         if taskText in self.todaysTasks:
             messagebox.showerror("Already Exists", taskText+" already exists. It won't be added.")
@@ -232,14 +237,12 @@ class Track(object):
                 writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
                 for interval in t['timeStamps']:
                     writer.writerow(['', '', '', interval[0], interval[1]])
-        ##  Add self.todaysTasks to _keywords_.csv if not already there
-        addKeywords=[]
-        for t in self.todaysTasks:
-            if t not in self.taskKeyWords:
-                addKeywords.append(t)
-        with open(KEYWORDS_FILE, "a") as f:
-            writer = csv.writer(f, delimiter=',')
-            writer.writerow(addKeywords)
+        ##  Add self.newKeywords to _keywords_.csv if not already there
+        print(self.newKeywords)
+        if self.newKeywords:
+            with open(KEYWORDS_FILE, "a") as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(self.newKeywords)
         # DONE
         self.application.destroy()
 
