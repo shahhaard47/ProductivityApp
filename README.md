@@ -15,8 +15,9 @@ python3 app.py
 > Must be executed from within the folder because of fileIO and the use of `AutocompleteEntry.py`
 
 ## Modules used
-> default Python packages
+- `humanize=0.5.1`
 
+> default Python packages
 - `tkinter`
 - `datetime`
 - `os`

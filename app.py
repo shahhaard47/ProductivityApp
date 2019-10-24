@@ -12,6 +12,7 @@ from datetime import timedelta
 from datetime import date
 import csv
 import os
+import humanize
 
 from AutocompleteEntry import AutocompleteEntry
 
@@ -124,6 +125,28 @@ class Track(object):
         if self.taskEntry.get() == '': return
         self.addTask()
 
+    def labelClicked(self, event):
+        thisTask = None
+        
+        for t in self.tasks:
+            if event.widget is t['taskLabel']:
+                thisTask = t
+        if thisTask['timeStamps']:
+            se = thisTask['timeStamps'][-1]
+            [s, e] = [dt.strptime(i, "%m-%d-%Y %H:%M:%S") for i in se]
+            dur = str(e - s)
+            dur = dur[:-7] if '.' in dur else dur
+            msg = " ".join(["Last action was", humanize.naturaldelta(dur), "long. Would you like to undo it?"])
+            result = messagebox.askyesno("Action", msg)
+            if result:
+                # TODO:
+                print("delete last action from", thisTask)
+        else:
+            result = messagebox.askyesno("Action", "Would you like to delete this event?")
+            if result:
+                # TODO:
+                print("delete the task", thisTask)
+
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
         if not taskText and self.taskEntry.get() == '': return
@@ -140,6 +163,7 @@ class Track(object):
         self.todaysTasks.append(taskText)
         task = Label(self.application, text=taskText, anchor='c', width=40, borderwidth=1, relief="solid")
         task.grid(row=self.totalTasks + 1, column=0)
+        task.bind("<Button-1>", self.labelClicked)
         self.taskEntry.delete(0, "end")
         # start stop button
         b = self.createButton()
@@ -151,6 +175,7 @@ class Track(object):
         totTime.grid(row=self.totalTasks + 1, column=2)
         # add to tasks lst
         self.tasks.append({
+            "taskLabel" : task,
             "task" : task['text'],
             "button" : b,
             "totalTime" : totalTime,
@@ -238,7 +263,6 @@ class Track(object):
                 for interval in t['timeStamps']:
                     writer.writerow(['', '', '', interval[0], interval[1]])
         ##  Add self.newKeywords to _keywords_.csv if not already there
-        print(self.newKeywords)
         if self.newKeywords:
             with open(KEYWORDS_FILE, "a") as f:
                 writer = csv.writer(f, delimiter=',')
