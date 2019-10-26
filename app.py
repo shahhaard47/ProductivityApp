@@ -12,7 +12,7 @@ from datetime import timedelta
 from datetime import date
 import csv
 import os
-import humanize
+# import humanize
 
 from AutocompleteEntry import AutocompleteEntry
 
@@ -136,8 +136,8 @@ class Track(object):
             [s, e] = [dt.strptime(i, "%m-%d-%Y %H:%M:%S") for i in se]
             dur = str(e - s)
             dur = dur[:-7] if '.' in dur else dur
-            msg = " ".join(["Last action was", humanize.naturaldelta(dur), "long. Would you like to undo it?"])
-            result = messagebox.askyesno("Action", msg)
+            # msg = " ".join(["Last action was", humanize.naturaldelta(dur), "long. Would you like to undo it?"])
+            # result = messagebox.askyesno("Action", msg)
             if result:
                 # TODO:
                 print("delete last action from", thisTask)
@@ -199,6 +199,16 @@ class Track(object):
         btn['state'] = 'normal'
         btn.bind('<Button-1>', self.buttonCallback)
 
+    def currentTaskCounter(self):
+        if not self.WORKING: return
+        curidx = self.currentTask
+        prevCount = self.tasks[curidx]['totalTime']
+        newCount = prevCount + (dt.now() - self.startTime)
+        newCount = str(newCount)
+        if '.' in newCount: newCount = newCount[:-7]
+        self.tasks[curidx]['totalLabel']['text'] = newCount
+        Tk.after(self.application, 1000, func=self.currentTaskCounter)
+
     def startedTask(self, btn):
         # update button label
         btn['text'] = STOP
@@ -211,6 +221,7 @@ class Track(object):
                 self.disableButton(b['button'])
             else:
                 self.currentTask = i
+        self.currentTaskCounter()
 
     def stoppedTask(self, btn):
         btn['text'] = START
