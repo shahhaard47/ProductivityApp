@@ -17,13 +17,19 @@ python3 app.py
 ## Sample
 
 Application
-![Application](sample.png)
+
+
+![Application](sample.png "Productivity App")
 
 Autocomplete
-![Autocomplete](autocomplete.png)
+
+
+![Autocomplete](autocomplete.png "Autocomplete Feature")
 
 Persistent (stores tasks in CSV)
-![csvSample](csvsample.png)
+
+
+![csvSample](csvsample.png "Persistent Storage")
 
 ## Modules used
 - `humanize=0.5.1`
