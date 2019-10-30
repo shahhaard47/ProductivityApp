@@ -20,6 +20,9 @@ from AutocompleteEntry import AutocompleteEntry
 START = "Start"
 STOP = "Stop"
 KEYWORDS_FILE = '_keywords_.csv'
+saveOften_mins = 5
+saveOften_ms = int(saveOften_mins*(60*1000))
+
 
 class Track(object):
     def __init__(self):
@@ -54,8 +57,11 @@ class Track(object):
         self.currentTask = None # assigned to index
         self.startTime = None # datetime
         self.totalTasks = 0
+        self.skipSave = True  # skip autosaving when app has just turned on. but continue autosaving every `saveOften_ms` after that
 
         self.initializePrevious()
+
+        self.dynamicSaveTasks() # must only be called once and from here
 
         # DONE adding widgets
         self.application.mainloop()
@@ -200,6 +206,7 @@ class Track(object):
         btn.bind('<Button-1>', self.buttonCallback)
 
     def currentTaskCounter(self):
+        '''DYNAMIC TASK'''
         if not self.WORKING: return
         curidx = self.currentTask
         prevCount = self.tasks[curidx]['totalTime']
@@ -249,6 +256,29 @@ class Track(object):
         else:
             self.stoppedTask(event.widget)
 
+    def saveTasksToFile(self):
+        # Save tasks
+        fileName = str(date.today()) + ".csv"
+        # always overwrites previous file
+        with open(fileName, "w") as f:
+            writer = csv.writer(f, delimiter=",")
+            today = str(date.today())
+            writer.writerow(['SaveDate', 'Task', 'Total Time', 'Start', 'End'])
+            for idx, t in enumerate(self.tasks):
+                writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
+                for interval in t['timeStamps']:
+                    writer.writerow(['', '', '', interval[0], interval[1]])
+                if idx == self.currentTask:
+                    # TODO: deal with if self.WORKING is True
+                    pass
+
+    def dynamicSaveTasks(self):
+        if not self.skipSave:
+            self.saveTasksToFile()
+        else: 
+            self.skipSave = False
+        Tk.after(self.application, saveOften_ms, func=self.dynamicSaveTasks) # every 5 mins
+
     def appCloseHandler(self):
         print("Exiting...")
         if self.WORKING:
@@ -261,18 +291,9 @@ class Track(object):
                 self.stoppedTask(self.tasks[self.currentTask]['button'])
         
         # SAVE EVERYTHING
-        fileName = str(date.today()) + ".csv"
-        headerLine = True
-        # if os.path.exists(fileName): headerLine = False
-        with open(fileName, "w") as f:
-            writer = csv.writer(f, delimiter=",")
-            today = str(date.today())
-            if headerLine: writer.writerow(['SaveDate', 'Task', 'Total Time', 'Start', 'End'])
-            for t in self.tasks:
-                # if len(t['timeStamps']) == 0:
-                writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
-                for interval in t['timeStamps']:
-                    writer.writerow(['', '', '', interval[0], interval[1]])
+        self.saveTasksToFile()
+
+        # Save Keywords
         ##  Add self.newKeywords to _keywords_.csv if not already there
         if self.newKeywords:
             with open(KEYWORDS_FILE, "a") as f:
