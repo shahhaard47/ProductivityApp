@@ -19,6 +19,9 @@ python3 app.py
 Application
 ![Application](sample.png)
 
+Autocomplete
+![Autocomplete](autocomplete.png)
+
 Persistent (stores tasks in CSV)
 ![csvSample](csvsample.png)
 
