@@ -41,7 +41,7 @@ class Track(object):
     def __init__(self):
         self.application = Tk()
         # configure window
-        self.application.title('Productivity Tracker')
+        self.application.title('Productivity Czar')
         self.application.geometry('800x600')
         self.application.protocol('WM_DELETE_WINDOW', self.appCloseHandler)
         # ADD Widgets

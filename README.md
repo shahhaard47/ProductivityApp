@@ -4,10 +4,7 @@ Simple GUI Python app to help keep track of what you work on and for how long. P
 
 Created by: Haard Shah
 
-
-<div style="text-align:center">
-<a href="https://imgflip.com/gif/3etip0"><img src="https://i.imgflip.com/3etip0.gif" title="ProductivityCzar"/></a>
-</div>
+![](images/productivityCzar.gif)
 
 ## Running
 
@@ -20,17 +17,17 @@ python3 <path-to-file>/app.py
 Application
 
 
-![Application](sample.png "Productivity App")
+![Application](images/sample.png "Productivity App")
 
 Autocomplete
 
 
-![Autocomplete](autocomplete.png "Autocomplete Feature")
+![Autocomplete](images/autocomplete.png "Autocomplete Feature")
 
 Persistent (stores tasks in CSV)
 
 
-![csvSample](csvsample.png "Persistent Storage")
+![csvSample](images/csvsample.png "Persistent Storage")
 
 ## Modules used
 
