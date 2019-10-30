@@ -29,13 +29,17 @@ Persistent (stores tasks in CSV)
 ![csvSample](csvsample.png "Persistent Storage")
 
 ## Modules used
-- `humanize=0.5.1`
 
 > default Python packages
 - `tkinter`
 - `datetime`
 - `os`
 - `csv`
+
+> Might use in future (**not using yet**)
+- `humanize==0.5.1`
+- `PyTweening==1.0.3`
+
 
 ## Next
 
