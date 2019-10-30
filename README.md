@@ -1,9 +1,14 @@
-# Productivity / Activity Tracker
+# The Productivity Czar
 
 Simple GUI Python app to help keep track of what you work on and for how long
 Application can be exited at the end of the day and saves tasks to CSV
 
 Created by: Haard Shah
+
+
+<div style="text-align:center">
+<a href="https://imgflip.com/gif/3etip0"><img src="https://i.imgflip.com/3etip0.gif" title="ProductivityCzar"/></a>
+</div>
 
 ## Running
 
