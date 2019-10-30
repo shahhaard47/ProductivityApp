@@ -14,6 +14,14 @@ python3 app.py
 **ALSO**
 > Must be executed from within the folder because of fileIO and the use of `AutocompleteEntry.py`
 
+## Sample
+
+Application
+![Application](sample.png)
+
+Persistent (stores tasks in CSV)
+![csvSample](csvsample.png)
+
 ## Modules used
 - `humanize=0.5.1`
 
@@ -28,3 +36,5 @@ python3 app.py
 - Add colors / Prettify everything
 - Ability to delete tasks from current session
 - Ability to VOID current running task
+- Scroll (autocomplete listbox in `AutocompleteEntry.py`)
+- Scroll (main window if there are too many tasks)

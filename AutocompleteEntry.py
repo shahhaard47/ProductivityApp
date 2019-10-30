@@ -35,7 +35,7 @@ class AutocompleteEntry(Entry):
             words = self.comparison()
             if words:
                 if not self.lb_up:
-                    self.lb = Listbox()
+                    self.lb = Listbox(width=40)
                     self.lb.bind("<Double-Button-1>", self.selection)
                     self.lb.bind("<Right>", self.selection)
                     self.lb.place(x=self.winfo_x(),
