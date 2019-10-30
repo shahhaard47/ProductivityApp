@@ -19,10 +19,23 @@ from AutocompleteEntry import AutocompleteEntry
 # Constants
 START = "Start"
 STOP = "Stop"
-KEYWORDS_FILE = '_keywords_.csv'
+FILE_PREFIX = "data/"
+KEYWORDS_FILE = FILE_PREFIX+'_keywords_.csv'
 saveOften_mins = 5
 saveOften_ms = int(saveOften_mins*(60*1000))
 
+# file must be called directly from within folder containing it (if not change dir to folder containing it)
+appFile = os.path.realpath(__file__)
+parentDir = os.path.dirname(appFile)
+cwd = os.getcwd()
+if not cwd==parentDir:
+    os.chdir(parentDir)
+    print("changed cwd")
+    print(os.getcwd())
+
+# create data folder if doesn't exist
+if not os.path.isdir(FILE_PREFIX):
+    os.mkdir(FILE_PREFIX)
 
 class Track(object):
     def __init__(self):
@@ -111,7 +124,7 @@ class Track(object):
 
     def initializePrevious(self):
         '''Initialize previous tasks from today if they exist'''
-        dayFile = str(date.today())+'.csv'
+        dayFile = FILE_PREFIX + str(date.today())+'.csv'
         if not os.path.exists(dayFile): return
         # file exists
         with open(dayFile) as f:
@@ -258,7 +271,7 @@ class Track(object):
 
     def saveTasksToFile(self):
         # Save tasks
-        fileName = str(date.today()) + ".csv"
+        fileName = FILE_PREFIX + str(date.today()) + ".csv"
         # always overwrites previous file
         with open(fileName, "w") as f:
             writer = csv.writer(f, delimiter=",")

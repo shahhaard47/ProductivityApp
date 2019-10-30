@@ -8,11 +8,8 @@ Created by: Haard Shah
 ## Running
 
 ```bash
-python3 app.py
+python3 <path-to-file>/app.py
 ```
-
-**ALSO**
-> Must be executed from within the folder because of fileIO and the use of `AutocompleteEntry.py`
 
 ## Sample
 
