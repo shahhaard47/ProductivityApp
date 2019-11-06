@@ -73,8 +73,9 @@ class Track(object):
         self.skipSave = True  # skip autosaving when app has just turned on. but continue autosaving every `saveOften_ms` after that
 
         self.initializePrevious()
+        self.loadPreviousTaskKeywordsFromFile()
 
-        self.dynamicSaveTasks() # must only be called once and from here
+        self.__dynamicSaveTasks__()  # must only be called once and from here
 
         # DONE adding widgets
         self.application.mainloop()
@@ -138,7 +139,6 @@ class Track(object):
                     s = row[3]
                     e = row[4]
                     self.tasks[-1]['timeStamps'].append((s, e))
-        self.loadPreviousTaskKeywordsFromFile()
 
     def _addTaskWithReturnKey(self, entry):
         if self.taskEntry.get() == '': return
@@ -285,12 +285,12 @@ class Track(object):
                     # TODO: deal with if self.WORKING is True
                     pass
 
-    def dynamicSaveTasks(self):
+    def __dynamicSaveTasks__(self):
         if not self.skipSave:
             self.saveTasksToFile()
         else: 
             self.skipSave = False
-        Tk.after(self.application, saveOften_ms, func=self.dynamicSaveTasks) # every 5 mins
+        Tk.after(self.application, saveOften_ms, func=self.__dynamicSaveTasks__) # every 5 mins
 
     def appCloseHandler(self):
         print("Exiting...")

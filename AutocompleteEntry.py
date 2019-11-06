@@ -97,7 +97,7 @@ class AutocompleteEntry(Entry):
                 self.lb.activate(index)
 
     def comparison(self):
-        pattern = re.compile('.*' + self.var.get() + '.*', re.IGNORECASE)
+        pattern = re.compile('.*' + re.escape(self.var.get()) + '.*', re.IGNORECASE)
         return [w for w in (self.lista + self.highlightLst) if re.match(pattern, w)]
 
 
