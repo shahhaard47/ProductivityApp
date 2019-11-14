@@ -38,6 +38,7 @@ if not os.path.isdir(FILE_PREFIX):
     os.mkdir(FILE_PREFIX)
 
 class Track(object):
+
     def __init__(self):
         self.application = Tk()
         # configure window
@@ -55,7 +56,10 @@ class Track(object):
 
         self.taskEntry = AutocompleteEntry(self.taskKeyWords, self.todaysTasks, self.application, width=40)
         self.taskEntry.grid(row=0, column=0, pady=10, padx=10)
-        self.taskEntry.bind('<Return>', self._addTaskWithReturnKey)
+        # self.taskEntry.bind('<Return>', self._addTaskWithReturnKey)
+        # keyboard shortcuts
+        self.bindEntryToKeys(self.taskEntry)
+
         addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="green") # TODO: pass in entry as argument
         addButton.grid(row=0, column=1, pady=10)
 
@@ -140,9 +144,25 @@ class Track(object):
                     e = row[4]
                     self.tasks[-1]['timeStamps'].append((s, e))
 
+    def bindEntryToKeys(self, entryObj):
+        entryObj.bind('<Return>', self._addTaskWithReturnKey)
+        entryObj.bind('<Control-BackSpace>', self._deleteLastWordEntry)
+        entryObj.bind('<Shift-BackSpace>', self._deleteWholeEntry)
+
     def _addTaskWithReturnKey(self, entry):
         if self.taskEntry.get() == '': return
         self.addTask()
+    
+    def _deleteLastWordEntry(self, event):
+        words = self.taskEntry.get()
+        if words == '': return
+        totallen = len(words)
+        lastlen = len(words.split()[-1])
+        self.taskEntry.delete(totallen-lastlen, "end")
+        # return "break"
+
+    def _deleteWholeEntry(self, event):
+        self.taskEntry.delete(0, "end")
 
     def labelClicked(self, event):
         thisTask = None
