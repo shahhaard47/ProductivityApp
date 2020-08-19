@@ -171,21 +171,44 @@ class Track(object):
         for t in self.tasks:
             if event.widget is t['taskLabel']:
                 thisTask = t
+                print(thisTask is t)
+        # print(thisTask['timeStamps'])
         if thisTask['timeStamps']:
+            # NOTE: this is to delete last event
             se = thisTask['timeStamps'][-1]
             [s, e] = [dt.strptime(i, "%m-%d-%Y %H:%M:%S") for i in se]
             dur = str(e - s)
             dur = dur[:-7] if '.' in dur else dur
             # msg = " ".join(["Last action was", humanize.naturaldelta(dur), "long. Would you like to undo it?"])
-            # result = messagebox.askyesno("Action", msg)
+            msg = " ".join(["Last action was", str(dur), "long. Would you like to undo it?"])
+            result = messagebox.askyesno("Action", msg)
             if result:
-                # TODO:
-                print("delete last action from", thisTask)
+                print(self.tasks)
+                # subtract dur from total time
+                thisTask['totalTime'] -= (e - s)
+                if thisTask['totalTime'] < timedelta():
+                    thisTask['totalTime'] = timedelta()
+                strTD = str(thisTask['totalTime'])
+                thisTask['totalLabel']['text'] = strTD[:-7] if '.' in strTD else strTD
+                # remove last event from list
+                thisTask['timeStamps'].pop(-1)
+                # print(self.tasks)
         else:
             result = messagebox.askyesno("Action", "Would you like to delete this event?")
             if result:
-                # TODO:
-                print("delete the task", thisTask)
+                self.deleteTask(thisTask)
+
+    def deleteTask(self, task):
+        print("------------- delete task invoked -----------")
+        print("task info", task)
+        # print("saved idx", task['row_idx'])
+        # print("idx in list", self.tasks.index(task))
+        l = list(self.application.grid_slaves(row=task['row_idx']))
+        for w in l:
+            # print(w)
+            w.grid_forget()
+        self.tasks.remove(task)
+
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
@@ -220,9 +243,12 @@ class Track(object):
             "button" : b,
             "totalTime" : totalTime,
             "totalLabel" : totTime,
-            "timeStamps" : [] if timeStamps is None else timeStamps
+            "timeStamps" : [] if timeStamps is None else timeStamps,
+            "row_idx" : self.totalTasks + 1
         })
         self.totalTasks += 1
+        print(self.totalTasks)
+
 
 
     def createButton(self):
