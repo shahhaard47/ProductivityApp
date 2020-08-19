@@ -20,9 +20,16 @@ class AutocompleteEntry(Entry):
             self.var = self["textvariable"] = StringVar()
 
         self.var.trace('w', self.changed)
+        # self.bind
         self.bind("<Right>", self.selection)
+        self.unbind_all("<Tab>")
+        self.unbind_all("<<NextWindow>>")
+        self.bind("<Tab>", self.fillin)
+
         self.bind("<Up>", self.up)
+        self.bind("<Control-p>", self.up)
         self.bind("<Down>", self.down)
+        self.bind("<Control-n>", self.down)
 
         self.lb_up = False
 
@@ -61,6 +68,11 @@ class AutocompleteEntry(Entry):
                 if self.lb_up:
                     self.lb.destroy()
                     self.lb_up = False
+
+    def fillin(self, event):
+        if self.lb_up:
+            self.var.set(self.lb.get(ACTIVE))
+            self.icursor(END)
 
     def selection(self, event):
 

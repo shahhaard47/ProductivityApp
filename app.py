@@ -146,7 +146,8 @@ class Track(object):
 
     def bindEntryToKeys(self, entryObj):
         entryObj.bind('<Return>', self._addTaskWithReturnKey)
-        entryObj.bind('<Control-BackSpace>', self._deleteLastWordEntry)
+        entryObj.bind('<Option-BackSpace>', self._deleteLastWordEntry)
+        entryObj.bind('<Command-BackSpace>', self._deleteWholeEntry)
         entryObj.bind('<Shift-BackSpace>', self._deleteWholeEntry)
 
     def _addTaskWithReturnKey(self, entry):

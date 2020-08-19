@@ -1,3 +1,5 @@
 *.csv
 __pycache__
 my-app
+data
+.DS_Store
