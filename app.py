@@ -16,6 +16,8 @@ import os
 
 from AutocompleteEntry import AutocompleteEntry
 
+from gcal import GoogleCal
+
 # Constants
 START = "Start"
 STOP = "Stop"
@@ -40,6 +42,10 @@ if not os.path.isdir(FILE_PREFIX):
 class Track(object):
 
     def __init__(self):
+
+        # init google calendar
+        self.gcal = GoogleCal()
+
         self.application = Tk()
         # configure window
         self.application.title('Productivity Czar')
@@ -180,7 +186,7 @@ class Track(object):
             dur = str(e - s)
             dur = dur[:-7] if '.' in dur else dur
             # msg = " ".join(["Last action was", humanize.naturaldelta(dur), "long. Would you like to undo it?"])
-            msg = " ".join(["Last action was", str(dur), "long. Would you like to undo it?"])
+            msg = " ".join(["Last action was", str(dur), "long. Would you like to undo it? (you will have to manually remove it from Google Calendar)"])
             result = messagebox.askyesno("Action", msg)
             if result:
                 print(self.tasks)
@@ -200,15 +206,15 @@ class Track(object):
 
     def deleteTask(self, task):
         print("------------- delete task invoked -----------")
-        print("task info", task)
+        print("task ", task['task'])
         # print("saved idx", task['row_idx'])
         # print("idx in list", self.tasks.index(task))
         l = list(self.application.grid_slaves(row=task['row_idx']))
         for w in l:
             # print(w)
             w.grid_forget()
+        # self.todaysTasks.remove(task['task'])
         self.tasks.remove(task)
-
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
@@ -300,6 +306,10 @@ class Track(object):
         self.tasks[self.currentTask]['totalLabel']['text'] = strTD[:-7] if '.' in strTD else strTD
         self.tasks[self.currentTask]['timeStamps'].append(
             (self.startTime.strftime("%m-%d-%Y %H:%M:%S"), endTime.strftime("%m-%d-%Y %H:%M:%S")))  # TODO: add date to the timestamp
+
+        title = self.tasks[self.currentTask]['task']
+        idx = self.tasks[self.currentTask]['row_idx']
+        self.gcal.addEvent(self.startTime, endTime, title, idx)
 
         # manage state vars
         self.WORKING = False
