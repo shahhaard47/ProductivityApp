@@ -12,6 +12,7 @@ from datetime import timedelta
 from datetime import date
 import csv
 import os
+import sys
 # import humanize
 
 from AutocompleteEntry import AutocompleteEntry
@@ -76,6 +77,7 @@ class Track(object):
         self.buttonFrame.grid(row=2, column=1, pady=10)
 
         # state vars
+        self.todaysDate = str(date.today())
         self.WORKING = False
         self.currentTask = None # assigned to index
         self.startTime = None # datetime
@@ -135,7 +137,7 @@ class Track(object):
 
     def initializePrevious(self):
         '''Initialize previous tasks from today if they exist'''
-        dayFile = FILE_PREFIX + str(date.today())+'.csv'
+        dayFile = FILE_PREFIX + self.todaysDate+'.csv'
         if not os.path.exists(dayFile): return
         # file exists
         with open(dayFile) as f:
@@ -218,7 +220,8 @@ class Track(object):
 
     def addTask(self, taskText=None, totalTime=None, timeStamps=None):
         # do nothing if taskEntry box is empty
-        if not taskText and self.taskEntry.get() == '': return
+        if not taskText and self.taskEntry.get() == '': 
+            return
         # task
         if not taskText: # added through GUI
             taskText = self.taskEntry.get()
@@ -280,6 +283,7 @@ class Track(object):
         newCount = str(newCount)
         if '.' in newCount: newCount = newCount[:-7]
         self.tasks[curidx]['totalLabel']['text'] = newCount
+        self.check_date_changed()
         Tk.after(self.application, 1000, func=self.currentTaskCounter)
 
     def startedTask(self, btn):
@@ -307,9 +311,9 @@ class Track(object):
         self.tasks[self.currentTask]['timeStamps'].append(
             (self.startTime.strftime("%m-%d-%Y %H:%M:%S"), endTime.strftime("%m-%d-%Y %H:%M:%S")))  # TODO: add date to the timestamp
 
+        start = self.startTime
         title = self.tasks[self.currentTask]['task']
         idx = self.tasks[self.currentTask]['row_idx']
-        self.gcal.addEvent(self.startTime, endTime, title, idx)
 
         # manage state vars
         self.WORKING = False
@@ -317,7 +321,10 @@ class Track(object):
         self.startTime = None
         # enable all buttons
         for i, b in enumerate(self.tasks):
-            self.enableButton(b['button'])
+            self.enableButton(b['button'])  
+
+        self.gcal.addEvent(start, endTime, title, idx)
+
 
     def buttonCallback(self, event):
         # print("CurrTime:", dt.now())
@@ -326,13 +333,25 @@ class Track(object):
         else:
             self.stoppedTask(event.widget)
 
+    def restart_app(self):
+        """Force stop tasks, save, and restart current app"""
+        self.__close_app_stuff__(force_close=True)
+        python = sys.executable
+        os.execl(python, python, * sys.argv)
+
+    def check_date_changed(self):
+        actual_today = str(date.today())
+        if actual_today != self.todaysDate: 
+            # restart app
+            self.restart_app()
+
     def saveTasksToFile(self):
         # Save tasks
-        fileName = FILE_PREFIX + str(date.today()) + ".csv"
+        fileName = FILE_PREFIX + self.todaysDate + ".csv"
         # always overwrites previous file
         with open(fileName, "w") as f:
             writer = csv.writer(f, delimiter=",")
-            today = str(date.today())
+            today = self.todaysDate
             writer.writerow(['SaveDate', 'Task', 'Total Time', 'Start', 'End'])
             for idx, t in enumerate(self.tasks):
                 writer.writerow([today, t['task'], t['totalLabel']['text'], '', ''])
@@ -349,17 +368,20 @@ class Track(object):
             self.skipSave = False
         Tk.after(self.application, saveOften_ms, func=self.__dynamicSaveTasks__) # every 5 mins
 
-    def appCloseHandler(self):
-        print("Exiting...")
+    def __close_app_stuff__(self, force_close=False):
         if self.WORKING:
-            task = '"'+self.tasks[self.currentTask]['task']+'"'
-            message = ' '.join([task, "is till running. Press OK to stop it and exit. "])
-            result = messagebox.askokcancel("Wait", message)
-            if not result:
-                return
-            else:
+            if force_close:
                 self.stoppedTask(self.tasks[self.currentTask]['button'])
-        
+            else:
+                task = '"'+self.tasks[self.currentTask]['task']+'"'
+                message = ' '.join(
+                    [task, "is till running. Press OK to stop it and exit. "])
+                result = messagebox.askokcancel("Wait", message)
+                if not result:
+                    return False
+                else:
+                    self.stoppedTask(self.tasks[self.currentTask]['button'])
+
         # SAVE EVERYTHING
         self.saveTasksToFile()
 
@@ -369,8 +391,17 @@ class Track(object):
             with open(KEYWORDS_FILE, "a") as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(self.newKeywords)
-        # DONE
-        self.application.destroy()
+
+        return True
+
+    def appCloseHandler(self):
+        if self.__close_app_stuff__():
+            print("Exiting...")
+
+            # DONE
+            self.application.destroy()
+        else:
+            return
 
 
 if __name__ == "__main__":

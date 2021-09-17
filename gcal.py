@@ -32,13 +32,22 @@ class GoogleCal:
             # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
+        self.creds = creds
 
-        self.service = build('calendar', 'v3', credentials=creds)
-        self.calendarId = 'primary' # could also be email address
+        # These will be set during initCal()
+        self.service = None
+        self.calendarId = 'primary'
+        self.time_zone = None
+        self.eventColors = None 
+        self.initCal()
+        
+    def initCal(self):
+        self.service = build('calendar', 'v3', credentials=self.creds)
+        self.calendarId = 'primary'     # could also be email address
         calendar_list_entry = self.service.calendarList().get(calendarId=self.calendarId).execute()
         self.time_zone = calendar_list_entry['timeZone']
         print(calendar_list_entry['summary'])
-        print(calendar_list_entry)
+        # print(calendar_list_entry)
 
         self.colors = self.service.colors().get().execute()
         self.eventColors = [c for c in self.colors['event']]
@@ -54,6 +63,7 @@ class GoogleCal:
             # print('  Background: ', color['background'])
             # print('  Foreground: ', color['foreground'])
     
+
     def getColorIds(self):
         return self.eventColors
 
@@ -75,6 +85,18 @@ class GoogleCal:
             'colorId' : colorId
         }
         print("Creating event", event)
-        event = self.service.events().insert(calendarId=self.calendarId, body=event).execute()
-        print('Event created:', event.get('htmlLink'))
+        itr = 0
+        while True:
+            try:
+                event = self.service.events().insert(calendarId=self.calendarId, body=event).execute()
+                print('Event created:', event.get('htmlLink'))
+                break
+            except Exception as e:
+                print("Couldn't add event to calendar. ERROR:", e)
+                if itr >= 4:
+                    print("Manually add the event:", event)
+                    break
+                print("Trying again")
+                self.initCal()
+            itr += 1
 
