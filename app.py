@@ -40,6 +40,7 @@ if not cwd==parentDir:
 if not os.path.isdir(FILE_PREFIX):
     os.mkdir(FILE_PREFIX)
 
+
 class Track(object):
 
     def __init__(self):
@@ -52,6 +53,9 @@ class Track(object):
         self.application.title('Productivity Czar')
         self.application.geometry('800x600')
         self.application.protocol('WM_DELETE_WINDOW', self.appCloseHandler)
+        # Window to top left of screen
+        self.application.geometry("+{}+{}".format(0, 0))
+
         # ADD Widgets
         # self.button = Button(self.application, text=START, width=20, command=self.buttonCallback)
         self.tasks = [] # each element will be dictionary
@@ -67,7 +71,7 @@ class Track(object):
         # keyboard shortcuts
         self.bindEntryToKeys(self.taskEntry)
 
-        addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="green") # TODO: pass in entry as argument
+        addButton = Button(self.application, text="Add Task", command=self.addTask, anchor="w", width=20, height=2, background="#c7c2b5", foreground='black') # TODO: pass in entry as argument
         addButton.grid(row=0, column=1, pady=10)
 
         self.taskFrame = Frame(self.application)
@@ -88,7 +92,7 @@ class Track(object):
         self.loadPreviousTaskKeywordsFromFile()
 
         self.__dynamicSaveTasks__()  # must only be called once and from here
-
+        
         # DONE adding widgets
         self.application.mainloop()
 
@@ -261,7 +265,8 @@ class Track(object):
 
 
     def createButton(self):
-        button = Button(self.application, text=START, width=20)
+        button = Button(self.application, text=START, width=20,
+                        foreground='black', background='#C7C2B5')
         button.bind("<Button-1>", self.buttonCallback)
         # button.pack()
         return button
@@ -404,6 +409,10 @@ class Track(object):
             return
 
 
+
+
 if __name__ == "__main__":
     myApp = Track()
+
+
     
