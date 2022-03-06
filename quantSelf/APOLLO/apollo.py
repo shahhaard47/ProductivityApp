@@ -64,6 +64,7 @@ import os
 import configparser
 from collections import OrderedDict
 import string
+from platformdirs import user_data_dir
 from simplekml import Kml, Style
 import re
 import shutil
@@ -71,29 +72,35 @@ import subprocess
 import stat
 import json
 
+
+curr_file_path = os.path.dirname(os.path.abspath(__file__))
+user_data_dir = os.path.join(curr_file_path, 'USER_DATA')
+if not os.path.exists(user_data_dir): os.makedirs(user_data_dir)
+tmp_apollo = os.path.join(user_data_dir, 'tmp_apollo')
+
 def gathermacos(database_names):
 	tempdir()
 	ignore_dir.append(os.getcwd())
-	print("...Searching for and copying databases into tmp_apollo...")
+	print(f"...Searching for and copying databases into {tmp_apollo}...")
 	for root, dirs, filenames in os.walk(data_dir,followlinks=False):
 		if not any(ignored in root for ignored in ignore_dir):
 			for f in filenames:
 				for db in database_names:
 					if db == "db":
 						if re.search(rf'^{db}(-shm|-wal|$)',f):
-							if not os.path.exists(os.getcwd() + "/tmp_apollo" + root):
-								os.makedirs(os.getcwd() + "/tmp_apollo" + root)
-							shutil.copyfile(os.path.join(root,f),os.getcwd() + "/tmp_apollo" + root +"/"+f)
+							if not os.path.exists(tmp_apollo + root):
+								os.makedirs(tmp_apollo + root)
+							shutil.copyfile(os.path.join(root,f),tmp_apollo + root +"/"+f)
 					elif re.search(rf'^{db}(-shm|-wal|$)',f):
-						if not os.path.exists(os.getcwd() + "/tmp_apollo" + root):
-							os.makedirs(os.getcwd() + "/tmp_apollo" + root)
-						shutil.copyfile(os.path.join(root,f),os.getcwd() + "/tmp_apollo" + root +"/"+f)
+						if not os.path.exists(tmp_apollo + root):
+							os.makedirs(tmp_apollo + root)
+						shutil.copyfile(os.path.join(root,f),tmp_apollo + root +"/"+f)
 	chown_chmod()
 
 def gatherios(database_names):
 
 	tempdir()
-	tmpdir = os.getcwd() + "/tmp_apollo"
+	tmpdir = tmp_apollo
 	sshProcess = subprocess.Popen(['ssh', '-p', port, '-T', 'root@' + ip]
 		, stdin=subprocess.PIPE
 		, stdout=subprocess.PIPE
@@ -113,7 +120,7 @@ def gatherios(database_names):
 				if not any(ignored in line.strip("\n") for ignored in ignore_dir):
 					file.write(line)
 
-	print("...Searching for and copying databases into tmp_apollo...")
+	print("...Searching for and copying databases into `tmp_apollo`...")
 	with open(tmpdir +'/ios_files.txt', 'r') as file:
 		lines = file.readlines()
 		for line in lines:
@@ -132,7 +139,7 @@ def gatherios(database_names):
 	chown_chmod()
 
 def tempdir():
-	tmpdir = os.getcwd() + "/tmp_apollo"
+	tmpdir = tmp_apollo
 	print("...Creating /tmp_apollo in: " + tmpdir)
 	if not os.path.exists(tmpdir):
 		os.makedirs(tmpdir)
@@ -140,7 +147,7 @@ def tempdir():
 
 def chown_chmod():
 	print("...chmod/chown all the things...")
-	for root, dirs, filenames in os.walk(os.getcwd() + "/tmp_apollo"):
+	for root, dirs, filenames in os.walk(tmp_apollo):
 			for d in dirs:
 				if os.access(os.path.join(root, d), os.R_OK) == False:
 					os.chmod(os.path.join(root, d), stat.S_IRWXU)
